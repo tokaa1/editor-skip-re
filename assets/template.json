@@ -1,0 +1,134 @@
+{
+  "settings": {
+    "name": "template",
+    "creator": "skip dev",
+    "spawnPosition": [
+      50,
+      250
+    ],
+    "spawnArea": "Home",
+    "version": 1
+  },
+  "maps": [
+    {
+      "name": "Home",
+      "size": [
+        100,
+        100
+      ],
+      "objects": [
+        {
+          "type": "text",
+          "position": [
+            50,
+            12
+          ],
+          "text": "%green%skip %gray%map editor"
+        },
+        {
+          "type": "rotatingLava",
+          "position": [
+            64,
+            30
+          ],
+          "size": [
+            30,
+            5
+          ],
+          "speed": 30,
+          "point": [
+            79,
+            33
+          ],
+          "startAngle": 0
+        },
+        {
+          "type": "button",
+          "position": [
+            10,
+            96
+          ],
+          "size": [
+            20,
+            4
+          ],
+          "id": 2,
+          "dir": 0,
+          "time": 5
+        },
+        {
+          "type": "switch",
+          "position": [
+            70,
+            96
+          ],
+          "size": [
+            20,
+            4
+          ],
+          "id": 1,
+          "dir": 0
+        },
+        {
+          "type": "text",
+          "position": [
+            50,
+            80
+          ],
+          "text": "%gray%click %purple%setup editor sync%gray% to"
+        },
+        {
+          "type": "text",
+          "position": [
+            50,
+            86
+          ],
+          "text": "%gray%to test in game"
+        },
+        {
+          "type": "rotatingLava",
+          "position": [
+            6,
+            30
+          ],
+          "size": [
+            30,
+            5
+          ],
+          "speed": -30,
+          "point": [
+            21,
+            33
+          ],
+          "startAngle": 0
+        },
+        {
+          "type": "door",
+          "position": [
+            45,
+            63
+          ],
+          "size": [
+            10,
+            8
+          ],
+          "linkIds": [
+            2,
+            1
+          ]
+        }
+      ],
+      "backgroundColor": [
+        1,
+        26,
+        1,
+        1
+      ],
+      "areaColor": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

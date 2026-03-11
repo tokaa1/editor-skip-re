@@ -1,0 +1,14 @@
+:root{
+  --contextualMenuBg: #202020;
+  --contextualMenuShadow: 1px 1px 10px #000;
+  --contextualMenuRadius: 3px;
+  --contextualMenuText: #cacaca;
+
+  --contextualSubMenuBg: #202020;
+
+  --contextualHover: #303030;
+
+  --contextualOverflowIcon: #cacaca;
+  --contextualSeperator: #cacaca;
+}
+/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly8uL2NsaWVudC9saWIvY29udGV4dHVhbC50aGVtZS5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7SUFDSSxzQ0FBc0M7SUFDdEMseUNBQXlDO0lBQ3pDLDJCQUEyQjtJQUMzQiw2QkFBNkI7O0lBRTdCLHlDQUF5Qzs7SUFFekMsMEJBQTBCOztJQUUxQiw4QkFBOEI7SUFDOUIsMkJBQTJCO0FBQy9CIiwic291cmNlc0NvbnRlbnQiOlsiOnJvb3R7XG4gICAgLS1jb250ZXh0dWFsTWVudUJnOiByZ2IoMjEzLCAyMTMsIDIxMyk7XG4gICAgLS1jb250ZXh0dWFsTWVudVNoYWRvdzogMXB4IDFweCAxMHB4ICMwMDA7XG4gICAgLS1jb250ZXh0dWFsTWVudVJhZGl1czogM3B4O1xuICAgIC0tY29udGV4dHVhbE1lbnVUZXh0OiAjMjQyNDI0O1xuXG4gICAgLS1jb250ZXh0dWFsU3ViTWVudUJnOiByZ2IoMTk4LCAxOTgsIDE5OCk7XG5cbiAgICAtLWNvbnRleHR1YWxIb3ZlcjogIzdlN2U5NDtcblxuICAgIC0tY29udGV4dHVhbE92ZXJmbG93SWNvbjogIzk5OTtcbiAgICAtLWNvbnRleHR1YWxTZXBlcmF0b3I6ICM5OTk7XG59XG4iXSwic291cmNlUm9vdCI6IiJ9 */

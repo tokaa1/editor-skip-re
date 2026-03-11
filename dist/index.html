@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Russo One">
+  <link href='https://fonts.googleapis.com/css?family=Rubik' rel='stylesheet'>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400&display=swap" rel="stylesheet">
+  <title>skip editor</title>
+  <script type="module" crossorigin src="/editor/assets/index-D4N-mUWF.js"></script>
+  <link rel="stylesheet" crossorigin href="/editor/assets/index-C4mNXHVO.css">
+</head>
+
+<body>
+  <canvas id="game" oncontextmenu="return false;"></canvas>
+
+  <div id="tl">
+    <button id="export" title="Export Map">
+      <svg width="25" height="25">
+        <path
+          d="M482.6 719.4c9.6 9.4 25.2 9.4 34.9 0l294.2-285.8c9.6-9.4 9.6-24.5 0-33.9l-58.5-56.8c-9.6-9.4-25.2-9.4-34.9 0l-139.2 135.2v-364.1c0-13.2-11-24-24.7-24h-98.6c-13.6 0-24.7 10.7-24.7 24v374.1l-149.4-145.2c-9.6-9.4-25.2-9.4-34.9 0l-58.5 56.8c-9.6 9.4-9.6 24.5 0 33.9l294.3 285.8z m333.4-137.8v206.5h-632.1v-206.5h-121.4v267.3c0 33.6 27.1 60.7 60.8 60.7h753.3c33.6 0 60.8-27.1 60.8-60.7v-267.3h-121.4z"
+          transform="scale(0.025)" />
+      </svg>
+    </button>
+    <label id="importLabel" for="import" title="Import Map">
+      <svg width="25" height="25">
+        <path
+          d="M482.6 97.1c9.6-9.4 25.2-9.4 34.9 0l294.2 285.8c9.6 9.4 9.6 24.5 0 33.9l-58.5 56.8c-9.6 9.4-25.2 9.4-34.9 0l-139.2-135.3v364.1c0 13.2-11 24-24.7 24h-98.6c-13.6 0-24.7-10.7-24.7-24v-374l-149.4 145.2c-9.6 9.4-25.2 9.4-34.9 0l-58.5-56.8c-9.6-9.4-9.6-24.5 0-33.9l294.3-285.8z m333.4 484.5v206.5h-632.1v-206.5h-121.4v267.3c0 33.6 27.1 60.7 60.8 60.7h753.3c33.6 0 60.85-27.1 60.85-60.7v-267.3h-121.4z"
+          transform="scale(0.025)" />
+      </svg>
+      <input type="file" id="import" accept=".json,application/x-yaml">
+    </label>
+    <div style="height:10px;"></div>
+    <button id="createObstacle" class="create" title="Create Obstacle"></button>
+    <button id="createLava" class="create" title="Create Lava"></button>
+    <button id="createSlime" class="create" title="Create Slime"></button>
+    <button id="createIce" class="create" title="Create Ice"></button>
+  </div>
+
+  <div id="areas-panel">
+    <div id="areas-header">
+      <span>Area List (click to teleport)</span>
+      <button id="toggle-areas">^</button>
+    </div>
+    <div id="areas-list"></div>
+  </div>
+  <div id="editorStatus">editing: 'template' by 'skip dev'</div>
+
+  <div id="editorSync">
+    <div id="notConnected">
+      <button id="esConnectBtn" class="esBtn">setup editor sync!</button>
+    </div>
+    <div id="connected" hidden>
+      <a id="esConnectedText">editor sync is ready!</a>
+      <button id="esSyncBtn" class="esBtn syncBtn">sync!</button>
+    </div>
+  </div>
+
+  <button id="restart" type="button">Start from scratch</button>
+
+</body>
+
+</html>

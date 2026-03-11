@@ -1,0 +1,365 @@
+:root {
+  --obstacle: rgba(0, 10, 87, 0.8);
+  --lava: #d01000;
+  --slime: #00c000;
+  --ice: #00ffff;
+}
+
+body {
+  background: #101010;
+  color: #ffffff;
+  font-family: 'Russo One', sans-serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #606060;
+}
+
+.hidden {
+  display: none;
+}
+
+canvas {
+  display: block;
+}
+
+#tl {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  background: #00000080;
+  z-index: 10;
+}
+
+#export {
+  position: relative;
+  background: #00a000;
+  border: none;
+  border-radius: 2px 2px 0 0;
+  padding: 5px;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+#export svg {
+  position: relative;
+  z-index: 1;
+  transition: 0.4s;
+}
+
+#export path {
+  transition: 0.4s;
+}
+
+#export:hover path {
+  fill: #ffffff;
+}
+
+#export::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #00c000;
+  transition: transform 0.4s;
+  transform: translateY(-100%);
+}
+
+#export:hover::before {
+  transform: translateY(0%);
+}
+
+#importLabel {
+  position: relative;
+  background: #00a000;
+  border: none;
+  border-radius: 0 0 2px 2px;
+  padding: 5px;
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+  overflow: hidden;
+  display: block;
+}
+
+#importLabel svg {
+  position: relative;
+  z-index: 1;
+  transition: 0.4s;
+}
+
+#importLabel path {
+  transition: 0.4s;
+}
+
+#importLabel:hover path {
+  fill: #ffffff;
+}
+
+#importLabel::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #00c000;
+  transition: transform 0.4s;
+  transform: translateY(100%);
+}
+
+#importLabel:hover::before {
+  transform: translateY(0%);
+}
+
+#import {
+  display: none;
+}
+
+#createObstacle {
+  background: url("/textures/images/background11.png");
+  border-radius: 2px 2px 0 0;
+}
+
+#createObstacle::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 25px;
+  height: 25px;
+  background: var(--obstacle);
+}
+
+#createLava {
+  background: var(--lava);
+}
+
+#createSlime {
+  background: var(--slime);
+}
+
+#createIce {
+  background: var(--ice);
+  border-radius: 0 0 2px 2px;
+}
+
+.create {
+  transition: transform 0.4s;
+  overflow: hidden;
+  position: relative;
+  box-sizing: content-box;
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 5px solid #ffffff;
+  cursor: pointer;
+}
+
+.create:not([disabled]):hover {
+  border-color: #c0c0c0 !important;
+  transform: translateX(10px);
+}
+
+.create[disabled] {
+  cursor: unset;
+}
+
+.create[disabled]::after {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 35px;
+  height: 35px;
+  background: #ffffffe0;
+}
+
+#areas-panel {
+  display: flex;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: black;
+  width: 100%;
+  height: 25%;
+  z-index: 10;
+  transition: transform 0.2s;
+  transform: translateY(100%);
+}
+
+#areas-panel.open {
+  transform: translateY(0%);
+}
+
+#areas-header {
+  padding: 10px;
+  box-sizing: border-box;
+  background: black;
+  position: absolute;
+  bottom: 100%;
+  width: 100%;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+#toggle-areas {
+  background: transparent;
+  float: right;
+  cursor: pointer;
+  border: none;
+  color: #00ff00;
+  transform: scale(2, 1);
+  transition: transform 0.4s, color 0.4s;
+  font-family: Consolas, monospace;
+}
+
+.open #toggle-areas {
+  color: #ff0000;
+  transform: scale(2, -1);
+}
+
+#areas-list {
+  padding: 5px;
+  overflow-x: scroll;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.area-item {
+  padding: 7px 14px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  width: auto;
+  height: auto;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.1s;
+  background: #303030;
+  border: none;
+  margin-bottom: 2px;
+}
+
+.area-item:hover {
+  background: #404040;
+}
+
+.area-item.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.area-item-index {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 12px;
+  min-width: 22px;
+}
+
+.area-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#editorStatus {
+  font-family: 'Rubik', sans-serif;
+  font-size: 14px;
+  text-shadow: -1px -1px 0 black, 1px -1px 0 black, -1px 1px 0 black, 1px 1px 0 black;
+  color: #ffffff;
+  position: absolute;
+  top: 10px;
+  left: 55px;
+}
+
+#editorSync {
+  position: absolute;
+  top: 34px;
+  left: 55px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px;
+}
+
+.esBtn {
+  background: rgb(0, 39, 181);
+  color: white;
+  width: 180px;
+  height: 40px;
+  border: 1px solid #b756da;
+  outline: 0;
+  border-radius: 16px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: transform 0.4s, opacity 0.4s;
+}
+
+.esBtn:hover {
+  transform: scale(1.05);
+  opacity: 0.8;
+}
+
+.esBtn:active {
+  transform: scale(0.95);
+  opacity: 0.8;
+}
+
+.syncBtn {
+  width: 60px;
+  opacity: 1;
+}
+
+#esConnectedText {
+  font-family: Arial;
+  background: rgba(20, 20, 20, 0.6);
+  padding: 10px;
+  color: #ffffff;
+  border-bottom: 2px solid #b756da;
+}
+
+#restart {
+  position: fixed;
+  bottom: 3px;
+  left: 3px;
+  font-size: 11px;
+  z-index: 5;
+  background: #202020;
+  color: #ffffff;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-family: Consolas, monospace;
+}
+
+#restart:hover {
+  background: #303030;
+}
+
+.dg.main {
+  max-height: calc(100vh - 44px);
+  overflow-y: auto;
+}
