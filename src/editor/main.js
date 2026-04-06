@@ -313,6 +313,9 @@ class Map {
         if (maps[i].objects[j].type == 'hatReward') {
           objects.push(new HatReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
+        if (maps[i].objects[j].type == 'timeTrap') {
+          objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
+        }
       }
       let bgCol = backgroundColor;
       let arCol = areaColor;
