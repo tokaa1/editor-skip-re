@@ -941,6 +941,10 @@ class Area {
       let r = 0;
       let g = 0;
       let b = 0;
+      if (gravityZones[i].dir == 0) {
+        r = 255;
+        g = 255;
+      }
       if (gravityZones[i].dir == 1) {
         r = 255;
       }
@@ -1676,6 +1680,8 @@ class GravityZone {
       Left: 1,
       Right: 3,
       Up: 2,
+      Down: 0,
+      Zero: 4,
     });
     objectPosition.open();
     objectSize.open();
