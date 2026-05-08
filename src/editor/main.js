@@ -319,6 +319,9 @@ class Map {
         if (maps[i].objects[j].type == 'timeTrap') {
           objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
         }
+        if (maps[i].objects[j].type == 'noBoostZone') {
+          objects.push(new NoBoostZone(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1])))
+        }
       }
       let bgCol = backgroundColor;
       let arCol = areaColor;
@@ -520,6 +523,13 @@ class Map {
             position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
             size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
             time: this.areas[i].objects[j].time,
+          });
+        }
+        if (this.areas[i].objects[j].type == 'noBoostZone') {
+          objectsss.push({
+            type: this.areas[i].objects[j].type,
+            position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
+            size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
           });
         }
       }
@@ -964,6 +974,11 @@ class Area {
       context.fillStyle = 'rgba(255, 0, 0, 0.5)';
       context.fillRect(Math.round(width / 2 + ((timeTraps[i].pos.x) - cam.x) * scale), Math.round(height / 2 + ((timeTraps[i].pos.y) - cam.y) * scale), Math.round(timeTraps[i].size.x * scale), Math.round(timeTraps[i].size.y * scale));
     }
+    let noBoostZones = this.objects.filter((x) => x.type == 'noBoostZone');
+    for (let i in noBoostZones) {
+      context.fillStyle = 'rgba(230, 0, 255, 0.3)';
+      context.fillRect(Math.round(width / 2 + ((noBoostZones[i].pos.x) - cam.x) * scale), Math.round(height / 2 + ((noBoostZones[i].pos.y) - cam.y) * scale), Math.round(noBoostZones[i].size.x * scale), Math.round(noBoostZones[i].size.y * scale));
+    }
     context.restore();
     let texts = this.objects.filter((x) => x.type == 'text');
     for (var i in texts) {
@@ -1089,6 +1104,9 @@ class Area {
     }
     if (obj.type == 'timeTrap') {
       this.objects.push(new TimeTrap(obj.pos, obj.size, obj.time));
+    }
+    if (obj.type == 'noBoostZone') {
+      this.objects.push(new NoBoostZone(obj.pos, obj.size));
     }
     if (obj.type == 'reward') {
       this.objects.push(new Reward(obj.pos, obj.reward));
@@ -1831,6 +1849,33 @@ class TimeTrap {
     objectSize.add(this.size, 'x').min(1).step(1);
     objectSize.add(this.size, 'y').min(1).step(1);
     gui.add(this, 'time').min(0.01);
+    objectSize.open();
+    objectPosition.open();
+  }
+}
+class NoBoostZone {
+  constructor(pos, size, time) {
+    this.type = 'noBoostZone';
+    this.pos = new Vector(pos.x, pos.y);
+    this.size = new Vector(size.x, size.y);
+    this.time = time;
+  }
+
+  copy() {
+    return {
+      type: this.type,
+      pos: this.pos,
+      size: this.size,
+    };
+  }
+
+  customGui(gui) {
+    let objectPosition = gui.addFolder('Position');
+    objectPosition.add(this.pos, 'x').step(1);
+    objectPosition.add(this.pos, 'y').step(1);
+    let objectSize = gui.addFolder('Size');
+    objectSize.add(this.size, 'x').min(1).step(1);
+    objectSize.add(this.size, 'y').min(1).step(1);
     objectSize.open();
     objectPosition.open();
   }
@@ -2739,6 +2784,16 @@ parentControl.addEventListener('contextmenu', () => {
             pos: mousePosContext,
             size: new Vector(50, 20),
             time: 5,
+          });
+        },
+      },
+      {
+        label: 'No Boost Zone',
+        onClick: () => {
+          area.createObject({
+            type: 'noBoostZone',
+            pos: mousePosContext,
+            size: new Vector(50, 20),
           });
         },
       },
