@@ -313,6 +313,9 @@ class Map {
         if (maps[i].objects[j].type == 'hatReward') {
           objects.push(new HatReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
+        if (maps[i].objects[j].type == 'trailReward') {
+          objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
+        }
         if (maps[i].objects[j].type == 'timeTrap') {
           objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
         }
@@ -504,7 +507,7 @@ class Map {
             opacity: this.areas[i].objects[j].opacity,
           });
         }
-        if (this.areas[i].objects[j].type == 'reward' || this.areas[i].objects[j].type == 'hatReward') {
+        if (this.areas[i].objects[j].type == 'reward' || this.areas[i].objects[j].type == 'hatReward' || this.areas[i].objects[j].type == 'trailReward') {
           objectsss.push({
             type: this.areas[i].objects[j].type,
             position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
@@ -992,7 +995,7 @@ class Area {
     }
     if (outline) {
       for (var i in this.objects) {
-        if (this.objects[i].type == 'reward' || this.objects[i].type == 'hatReward') {
+        if (this.objects[i].type == 'reward' || this.objects[i].type == 'hatReward' || this.objects[i].type == 'trailReward') {
           const size = 15;
           const halfSize = size / 2;
           context.strokeRect(
@@ -1082,6 +1085,15 @@ class Area {
     }
     if (obj.type == 'timeTrap') {
       this.objects.push(new TimeTrap(obj.pos, obj.size, obj.time));
+    }
+    if (obj.type == 'reward') {
+      this.objects.push(new Reward(obj.pos, obj.reward));
+    }
+    if (obj.type == 'hatReward') {
+      this.objects.push(new HatReward(obj.pos, obj.reward));
+    }
+    if (obj.type == 'trailReward') {
+      this.objects.push(new TrailReward(obj.pos, obj.reward));
     }
   }
 
@@ -1757,6 +1769,33 @@ class HatReward {
     // objectSize.add(this.size, 'y').min(1).step(1);
     // objectSize.open();
     let reward = gui.addFolder('Hat Reward');
+    reward.add(this, 'reward');
+    reward.open();
+  }
+}
+
+class TrailReward {
+  constructor(pos, reward) {
+    this.type = "trailReward";
+    this.reward = reward;
+    this.pos = new Vector(pos.x, pos.y);;
+    this.size = new Vector(15, 15);
+  }
+
+  copy() {
+    return {
+      type: this.type,
+      pos: this.pos,
+      reward: this.reward
+    };
+  }
+
+  customGui(gui) {
+    let objectPosition = gui.addFolder('Position');
+    objectPosition.add(this.pos, 'x').step(1);
+    objectPosition.add(this.pos, 'y').step(1);
+    objectPosition.open();
+    let reward = gui.addFolder('Trail Reward');
     reward.add(this, 'reward');
     reward.open();
   }
@@ -2694,6 +2733,16 @@ parentControl.addEventListener('contextmenu', () => {
             pos: mousePosContext,
             size: new Vector(50, 20),
             time: 5,
+          });
+        },
+      },
+      {
+        label: 'Trail Reward',
+        onClick: () => {
+          area.createObject({
+            type: 'trailReward',
+            pos: mousePosContext,
+            reward: '',
           });
         },
       },
