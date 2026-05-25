@@ -320,7 +320,7 @@ class Map {
           objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
         }
         if (maps[i].objects[j].type == 'particleEmitter') {
-          objects.push(new ParticleEmitter(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].particleType, maps[i].objects[j].color, maps[i].objects[j].intensity, maps[i].objects[j].spreadRadius, maps[i].objects[j].particleSize, maps[i].objects[j].lifetimeMs, maps[i].objects[j].particleSpeed, maps[i].objects[j].layer));
+          objects.push(new ParticleEmitter(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].particleType, maps[i].objects[j].emissionType, maps[i].objects[j].color, maps[i].objects[j].intensity, maps[i].objects[j].spreadRadius, maps[i].objects[j].particleSize, maps[i].objects[j].lifetimeMs, maps[i].objects[j].particleSpeed, maps[i].objects[j].layer));
         }
         if (maps[i].objects[j].type == 'trailReward') {
           objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
@@ -543,6 +543,7 @@ class Map {
             lifetimeMs: this.areas[i].objects[j].lifetimeMs,
             particleSpeed: this.areas[i].objects[j].particleSpeed,
             layer: this.areas[i].objects[j].layer,
+            emissionType: this.areas[i].objects[j].emissionType,
           });
         }
         if (this.areas[i].objects[j].type == 'image') {
@@ -1161,7 +1162,7 @@ class Area {
       this.objects.push(new TimeTrap(obj.pos, obj.size, obj.time));
     }
     if (obj.type == 'particleEmitter') {
-      this.objects.push(new ParticleEmitter(obj.pos, obj.particleType, obj.color, obj.intensity, obj.spreadRadius, obj.particleSize, obj.lifetimeMs, obj.particleSpeed, obj.layer));
+      this.objects.push(new ParticleEmitter(obj.pos, obj.particleType, obj.emissionType, obj.color, obj.intensity, obj.spreadRadius, obj.particleSize, obj.lifetimeMs, obj.particleSpeed, obj.layer));
     }
     if (obj.type == 'image') {
       this.objects.push(new ImageObj(obj.pos, obj.size, obj.data, obj.collide));
@@ -1554,10 +1555,11 @@ class Spawner {
   }
 }
 class ParticleEmitter {
-  constructor(pos, particleType, color, intensity, spreadRadius, particleSize, lifetimeMs, particleSpeed, layer) {
+  constructor(pos, particleType, emissionType, color, intensity, spreadRadius, particleSize, lifetimeMs, particleSpeed, layer) {
     this.type = 'particleEmitter';
     this.pos = new Vector(pos.x, pos.y);
     this.particleType = particleType || 0;
+    this.emissionType = emissionType || 0;
     this.color = color || 0xFFFFFFFF;
     this.intensity = intensity || 1.0;
     this.spreadRadius = spreadRadius || 100.0;
@@ -1572,6 +1574,7 @@ class ParticleEmitter {
       type: this.type,
       pos: this.pos,
       particleType: this.particleType,
+      emissionType: this.emissionType,
       color: this.color,
       intensity: this.intensity,
       spreadRadius: this.spreadRadius,
@@ -1587,10 +1590,16 @@ class ParticleEmitter {
     objectPosition.add(this.pos, 'x').step(1);
     objectPosition.add(this.pos, 'y').step(1);
     gui.add(this, 'particleType', {
-      Fire: 0,
-      Rain: 1,
-      Snow: 2,
-      Boost: 3
+      fire: 0,
+      rain: 1,
+      snow: 2,
+      boost: 3,
+      square: 4
+    });
+    gui.add(this, 'emissionType', {
+      explode: 0,
+      rain: 1,
+      random: 2
     });
     gui.addColor(this, 'color'); // removing for now because it is useless! and i want to force good defaults lowk
     gui.add(this, 'intensity').min(0).step(0.1);
@@ -1599,9 +1608,9 @@ class ParticleEmitter {
     gui.add(this, 'lifetimeMs').min(0).step(10);
     gui.add(this, 'particleSpeed').min(0).step(0.1);
     gui.add(this, 'layer', {
-      Background: 0,
-      Obstacles: 1,
-      Player: 2,
+      background: 0,
+      obstacles: 1,
+      player: 2,
     });
     objectPosition.open();
   }
@@ -3031,12 +3040,13 @@ parentControl.addEventListener('contextmenu', () => {
             pos: mousePosContext,
             particleType: 0,
             color: 0xFFFFFFFF,
-            intensity: 1.0,
-            spreadRadius: 100.0,
-            particleSize: 1.0,
-            lifetimeMs: 1000,
+            intensity: 10.0,
+            spreadRadius: 30.0,
+            particleSize: 2.0,
+            lifetimeMs: 900,
             particleSpeed: 20.0,
             layer: 0,
+            emissionType: 0
           });
         },
       },
