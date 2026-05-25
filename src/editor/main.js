@@ -319,6 +319,9 @@ class Map {
         if (maps[i].objects[j].type == 'timeTrap') {
           objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
         }
+        if (maps[i].objects[j].type == 'particleEmitter') {
+          objects.push(new ParticleEmitter(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].particleType, maps[i].objects[j].color, maps[i].objects[j].intensity, maps[i].objects[j].spreadRadius, maps[i].objects[j].particleSize, maps[i].objects[j].lifetimeMs, maps[i].objects[j].particleSpeed, maps[i].objects[j].layer));
+        }
         if (maps[i].objects[j].type == 'trailReward') {
           objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
@@ -526,6 +529,20 @@ class Map {
             position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
             size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
             time: this.areas[i].objects[j].time,
+          });
+        }
+        if (this.areas[i].objects[j].type == 'particleEmitter') {
+          objectsss.push({
+            type: this.areas[i].objects[j].type,
+            position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
+            particleType: this.areas[i].objects[j].particleType,
+            color: this.areas[i].objects[j].color,
+            intensity: this.areas[i].objects[j].intensity,
+            spreadRadius: this.areas[i].objects[j].spreadRadius,
+            particleSize: this.areas[i].objects[j].particleSize,
+            lifetimeMs: this.areas[i].objects[j].lifetimeMs,
+            particleSpeed: this.areas[i].objects[j].particleSpeed,
+            layer: this.areas[i].objects[j].layer,
           });
         }
         if (this.areas[i].objects[j].type == 'image') {
@@ -1069,7 +1086,7 @@ class Area {
         if (selected.includes(i)) {
           context.strokeStyle = 'rgb(255, 14, 14)';
         }
-        if (this.objects[i].type == 'text' || this.objects[i].type == 'turret') {
+        if (this.objects[i].type == 'text' || this.objects[i].type == 'turret' || this.objects[i].type == 'particleEmitter') {
           context.arc(Math.round(Math.round(width / 2) + ((this.objects[i].pos.x) - cam.x) * scale), Math.round(Math.round(height / 2) + ((this.objects[i].pos.y) - cam.y) * scale), 5 * scale, 0, Math.PI * 2, true);
           context.stroke();
         } else {
@@ -1142,6 +1159,9 @@ class Area {
     }
     if (obj.type == 'timeTrap') {
       this.objects.push(new TimeTrap(obj.pos, obj.size, obj.time));
+    }
+    if (obj.type == 'particleEmitter') {
+      this.objects.push(new ParticleEmitter(obj.pos, obj.particleType, obj.color, obj.intensity, obj.spreadRadius, obj.particleSize, obj.lifetimeMs, obj.particleSpeed, obj.layer));
     }
     if (obj.type == 'image') {
       this.objects.push(new ImageObj(obj.pos, obj.size, obj.data, obj.collide));
@@ -1533,6 +1553,60 @@ class Spawner {
     objectSize.open();
   }
 }
+class ParticleEmitter {
+  constructor(pos, particleType, color, intensity, spreadRadius, particleSize, lifetimeMs, particleSpeed, layer) {
+    this.type = 'particleEmitter';
+    this.pos = new Vector(pos.x, pos.y);
+    this.particleType = particleType || 0;
+    this.color = color || 0xFFFFFFFF;
+    this.intensity = intensity || 1.0;
+    this.spreadRadius = spreadRadius || 100.0;
+    this.particleSize = particleSize || 1.0;
+    this.lifetimeMs = lifetimeMs || 1000;
+    this.particleSpeed = particleSpeed || 20.0;
+    this.layer = layer || 0;
+  }
+
+  copy() {
+    return {
+      type: this.type,
+      pos: this.pos,
+      particleType: this.particleType,
+      color: this.color,
+      intensity: this.intensity,
+      spreadRadius: this.spreadRadius,
+      particleSize: this.particleSize,
+      lifetimeMs: this.lifetimeMs,
+      particleSpeed: this.particleSpeed,
+      layer: this.layer,
+    };
+  }
+
+  customGui(gui) {
+    let objectPosition = gui.addFolder('Position');
+    objectPosition.add(this.pos, 'x').step(1);
+    objectPosition.add(this.pos, 'y').step(1);
+    gui.add(this, 'particleType', {
+      Fire: 0,
+      Rain: 1,
+      Snow: 2,
+      Boost: 3
+    });
+    gui.addColor(this, 'color'); // removing for now because it is useless! and i want to force good defaults lowk
+    gui.add(this, 'intensity').min(0).step(0.1);
+    gui.add(this, 'spreadRadius').min(0).step(1);
+    gui.add(this, 'particleSize').min(0).step(0.1);
+    gui.add(this, 'lifetimeMs').min(0).step(10);
+    gui.add(this, 'particleSpeed').min(0).step(0.1);
+    gui.add(this, 'layer', {
+      Background: 0,
+      Obstacles: 1,
+      Player: 2,
+    });
+    objectPosition.open();
+  }
+}
+
 class Text {
   constructor(pos, text) {
     this.type = 'text';
@@ -2298,7 +2372,7 @@ document.addEventListener('mousemove', (p) => {
   let grab = false;
   for (var i in area.objects) {
     // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
-    if (area.objects[i].type != 'text' && area.objects[i].type != 'turret') {
+    if (area.objects[i].type != 'text' && area.objects[i].type != 'turret' && area.objects[i].type != 'particleEmitter') {
       if (mousePos.x > area.objects[i].pos.x - (sizeS / scale)
         && mousePos.x < area.objects[i].pos.x + area.objects[i].size.x + (sizeS / scale)
         && mousePos.y > area.objects[i].pos.y - (sizeS / scale)
@@ -2328,7 +2402,7 @@ document.addEventListener('mousemove', (p) => {
   for (var i in area.objects) {
     // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
     if (resizeX == 0 && resizeY == 0) {
-      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
         if (Math.sqrt(Math.pow(mousePos.x - area.objects[i].pos.x, 2) + Math.pow(mousePos.y - area.objects[i].pos.y, 2)) < 5) {
           grab = true;
         }
@@ -2398,7 +2472,7 @@ document.getElementById('game').onmousedown = function (e) {
     }
     for (var i in area.objects) {
       // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
-      if (area.objects[i].type != 'text' && area.objects[i].type != 'turret') {
+      if (area.objects[i].type != 'text' && area.objects[i].type != 'turret' && area.objects[i].type != 'particleEmitter') {
         if (mousePos.x > area.objects[i].pos.x - (sizeS / scale)
           && mousePos.x < area.objects[i].pos.x + area.objects[i].size.x + (sizeS / scale)
           && mousePos.y > area.objects[i].pos.y - (sizeS / scale)
@@ -2452,7 +2526,7 @@ document.getElementById('game').onmousedown = function (e) {
     for (var i in area.objects) {
       // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
       if (!borderIsSelectedX && !borderIsSelectedY) {
-        if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+        if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
           if (Math.sqrt(Math.pow(mousePos.x - area.objects[i].pos.x, 2) + Math.pow(mousePos.y - area.objects[i].pos.y, 2)) < 5) {
             isSelected = true;
             if (!selected.includes(i) && keys[16] != true) {
@@ -2506,7 +2580,7 @@ document.onmouseup = function (e) {
     let area = world.getArea();
     for (var i in area.objects) {
       // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
-      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
         if (area.objects[i].pos.x > topleft.x
           && area.objects[i].pos.x < bottomright.x
           && area.objects[i].pos.y > topleft.y
@@ -2553,7 +2627,7 @@ parentControl.addEventListener('contextmenu', () => {
   let area = world.getArea();
   let mousePosContext = new Vector(Math.round(((mousePosReal.x - width / 2) / scale) + cam.x), Math.round(((mousePosReal.y - height / 2) / scale) + cam.y));
   for (let i in area.objects) {
-    if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+    if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
       if (Math.sqrt(Math.pow(mousePos.x - area.objects[i].pos.x, 2) + Math.pow(mousePos.y - area.objects[i].pos.y, 2)) < 5) {
         isObject = true;
         object = i;
@@ -2946,6 +3020,23 @@ parentControl.addEventListener('contextmenu', () => {
             pos: mousePosContext,
             size: new Vector(50, 20),
             time: 5,
+          });
+        },
+      },
+      {
+        label: 'Particle Emitter',
+        onClick: () => {
+          area.createObject({
+            type: 'particleEmitter',
+            pos: mousePosContext,
+            particleType: 0,
+            color: 0xFFFFFFFF,
+            intensity: 1.0,
+            spreadRadius: 100.0,
+            particleSize: 1.0,
+            lifetimeMs: 1000,
+            particleSpeed: 20.0,
+            layer: 0,
           });
         },
       },
