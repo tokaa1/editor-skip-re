@@ -313,11 +313,14 @@ class Map {
         if (maps[i].objects[j].type == 'hatReward') {
           objects.push(new HatReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
-        if (maps[i].objects[j].type == 'trailReward') {
-          objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
+        if (maps[i].objects[j].type == 'image') {
+          objects.push(new ImageObj(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].data, maps[i].objects[j].collide));
         }
         if (maps[i].objects[j].type == 'timeTrap') {
           objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
+        }
+        if (maps[i].objects[j].type == 'trailReward') {
+          objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
         if (maps[i].objects[j].type == 'noBoostZone') {
           objects.push(new NoBoostZone(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1])))
@@ -523,6 +526,15 @@ class Map {
             position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
             size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
             time: this.areas[i].objects[j].time,
+          });
+        }
+        if (this.areas[i].objects[j].type == 'image') {
+          objectsss.push({
+            type: this.areas[i].objects[j].type,
+            position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
+            size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
+            data: this.areas[i].objects[j].data,
+            collide: this.areas[i].objects[j].collide,
           });
         }
         if (this.areas[i].objects[j].type == 'noBoostZone') {
@@ -1012,6 +1024,32 @@ class Area {
       }
       context.restore();
     }
+    let images = this.objects.filter((x) => x.type == 'image');
+    for (let i in images) {
+      const img = images[i].getImage();
+      const sx = width / 2 + (images[i].pos.x - cam.x) * scale;
+      const sy = height / 2 + (images[i].pos.y - cam.y) * scale;
+      const sw = images[i].size.x * scale;
+      const sh = images[i].size.y * scale;
+      if (img) {
+        context.imageSmoothingEnabled = false;
+        context.drawImage(img, sx, sy, sw, sh);
+      } else {
+        context.save();
+        context.strokeStyle = 'rgba(100, 100, 255, 0.8)';
+        context.setLineDash([4, 4]);
+        context.strokeRect(sx, sy, sw, sh);
+        context.fillStyle = 'rgba(100, 100, 255, 0.15)';
+        context.fillRect(sx, sy, sw, sh);
+        context.setLineDash([]);
+        context.fillStyle = 'rgba(100, 100, 255, 0.8)';
+        context.font = `${Math.max(8, 3 * scale)}px Russo One, Verdana, Arial, Helvetica, sans-serif`;
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText('Image', sx + sw / 2, sy + sh / 2);
+        context.restore();
+      }
+    }
     if (outline) {
       for (var i in this.objects) {
         if (this.objects[i].type == 'reward' || this.objects[i].type == 'hatReward' || this.objects[i].type == 'trailReward') {
@@ -1104,6 +1142,9 @@ class Area {
     }
     if (obj.type == 'timeTrap') {
       this.objects.push(new TimeTrap(obj.pos, obj.size, obj.time));
+    }
+    if (obj.type == 'image') {
+      this.objects.push(new ImageObj(obj.pos, obj.size, obj.data, obj.collide));
     }
     if (obj.type == 'noBoostZone') {
       this.objects.push(new NoBoostZone(obj.pos, obj.size));
@@ -1853,6 +1894,82 @@ class TimeTrap {
     objectPosition.open();
   }
 }
+class ImageObj {
+  constructor(pos, size, data, collide) {
+    this.type = 'image';
+    this.pos = new Vector(pos.x, pos.y);
+    this.size = new Vector(size.x, size.y);
+    this.data = data || '';
+    this.collide = !!collide;
+    this._img = null;
+    this._loadedData = '';
+  }
+
+  getImage() {
+    if (this.data && this.data !== this._loadedData) {
+      this._loadedData = this.data;
+      this._img = null;
+      const img = new Image();
+      img.onload = () => { this._img = img; };
+      img.src = this.data;
+    }
+    return this._img;
+  }
+
+  copy() {
+    return {
+      type: this.type,
+      pos: this.pos,
+      size: this.size,
+      data: this.data,
+      collide: this.collide,
+    };
+  }
+
+  _pickFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.data = reader.result;
+        this._loadedData = '';
+        this._img = null;
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          let a = w, b = h;
+          while (b) { [a, b] = [b, a % b]; }
+          const rw = w / a;
+          const rh = h / a;
+          const k = Math.max(1, Math.floor(20 / Math.min(rw, rh)));
+          this.size.x = rw * k;
+          this.size.y = rh * k;
+        };
+        img.src = this.data;
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  customGui(gui) {
+    let objectPosition = gui.addFolder('Position');
+    objectPosition.add(this.pos, 'x').step(1);
+    objectPosition.add(this.pos, 'y').step(1);
+    let objectSize = gui.addFolder('Size');
+    objectSize.add(this.size, 'x').min(1).step(1);
+    objectSize.add(this.size, 'y').min(1).step(1);
+    gui.add(this, 'collide');
+    gui.add(this, '_pickFile').name('Choose Image...');
+    objectPosition.open();
+    objectSize.open();
+  }
+}
 class NoBoostZone {
   constructor(pos, size, time) {
     this.type = 'noBoostZone';
@@ -2576,6 +2693,51 @@ parentControl.addEventListener('contextmenu', () => {
         },
         enabled: selected.includes(object),
       },
+      {
+        label: 'Bake to Image',
+        onClick: () => {
+          const selObjs = selected.map(i => area.objects[i]);
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          for (const obj of selObjs) {
+            minX = Math.min(minX, obj.pos.x);
+            minY = Math.min(minY, obj.pos.y);
+            maxX = Math.max(maxX, obj.pos.x + obj.size.x);
+            maxY = Math.max(maxY, obj.pos.y + obj.size.y);
+          }
+          const w = maxX - minX;
+          const h = maxY - minY;
+          const offCanvas = document.createElement('canvas');
+          offCanvas.width = w;
+          offCanvas.height = h;
+          const offCtx = offCanvas.getContext('2d');
+          const sorted = [...selObjs].sort((a, b) => a.layer - b.layer);
+          for (const obj of sorted) {
+            const rgb = hexToRgb(obj.color);
+            offCtx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${obj.opacity})`;
+            offCtx.fillRect(obj.pos.x - minX, obj.pos.y - minY, obj.size.x, obj.size.y);
+          }
+          const dataUrl = offCanvas.toDataURL('image/png');
+          let tempArray = [];
+          for (let i in area.objects) {
+            if (!selected.includes(i)) {
+              tempArray.push(area.objects[i]);
+            }
+          }
+          area.objects = tempArray;
+          area.createObject({
+            type: 'image',
+            pos: new Vector(minX, minY),
+            size: new Vector(w, h),
+            data: dataUrl,
+            collide: false,
+          });
+          selected = [];
+          isSelected = false;
+        },
+        enabled: selected.includes(object)
+          && selected.length > 1
+          && selected.every(i => area.objects[i] && area.objects[i].type === 'block' && !area.objects[i].collide),
+      },
       ],
     },
     {
@@ -2784,6 +2946,17 @@ parentControl.addEventListener('contextmenu', () => {
             pos: mousePosContext,
             size: new Vector(50, 20),
             time: 5,
+          });
+        },
+      },
+      {
+        label: 'Image',
+        onClick: () => {
+          area.createObject({
+            type: 'image',
+            pos: mousePosContext,
+            size: new Vector(50, 50),
+            data: '',
           });
         },
       },
