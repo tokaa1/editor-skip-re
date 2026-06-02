@@ -313,11 +313,17 @@ class Map {
         if (maps[i].objects[j].type == 'hatReward') {
           objects.push(new HatReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
-        if (maps[i].objects[j].type == 'trailReward') {
-          objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
+        if (maps[i].objects[j].type == 'image') {
+          objects.push(new ImageObj(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].data, maps[i].objects[j].collide));
         }
         if (maps[i].objects[j].type == 'timeTrap') {
           objects.push(new TimeTrap(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1]), maps[i].objects[j].time))
+        }
+        if (maps[i].objects[j].type == 'particleEmitter') {
+          objects.push(new ParticleEmitter(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].particleType, maps[i].objects[j].emissionType, maps[i].objects[j].color, maps[i].objects[j].intensity, maps[i].objects[j].spreadRadius, maps[i].objects[j].particleSize, maps[i].objects[j].lifetimeMs, maps[i].objects[j].particleSpeed, maps[i].objects[j].layer));
+        }
+        if (maps[i].objects[j].type == 'trailReward') {
+          objects.push(new TrailReward(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), maps[i].objects[j].reward))
         }
         if (maps[i].objects[j].type == 'noBoostZone') {
           objects.push(new NoBoostZone(new Vector(maps[i].objects[j].position[0], maps[i].objects[j].position[1]), new Vector(maps[i].objects[j].size[0], maps[i].objects[j].size[1])))
@@ -523,6 +529,30 @@ class Map {
             position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
             size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
             time: this.areas[i].objects[j].time,
+          });
+        }
+        if (this.areas[i].objects[j].type == 'particleEmitter') {
+          objectsss.push({
+            type: this.areas[i].objects[j].type,
+            position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
+            particleType: this.areas[i].objects[j].particleType,
+            color: this.areas[i].objects[j].color,
+            intensity: this.areas[i].objects[j].intensity,
+            spreadRadius: this.areas[i].objects[j].spreadRadius,
+            particleSize: this.areas[i].objects[j].particleSize,
+            lifetimeMs: this.areas[i].objects[j].lifetimeMs,
+            particleSpeed: this.areas[i].objects[j].particleSpeed,
+            layer: this.areas[i].objects[j].layer,
+            emissionType: this.areas[i].objects[j].emissionType,
+          });
+        }
+        if (this.areas[i].objects[j].type == 'image') {
+          objectsss.push({
+            type: this.areas[i].objects[j].type,
+            position: [this.areas[i].objects[j].pos.x, this.areas[i].objects[j].pos.y],
+            size: [this.areas[i].objects[j].size.x, this.areas[i].objects[j].size.y],
+            data: this.areas[i].objects[j].data,
+            collide: this.areas[i].objects[j].collide,
           });
         }
         if (this.areas[i].objects[j].type == 'noBoostZone') {
@@ -1012,6 +1042,32 @@ class Area {
       }
       context.restore();
     }
+    let images = this.objects.filter((x) => x.type == 'image');
+    for (let i in images) {
+      const img = images[i].getImage();
+      const sx = width / 2 + (images[i].pos.x - cam.x) * scale;
+      const sy = height / 2 + (images[i].pos.y - cam.y) * scale;
+      const sw = images[i].size.x * scale;
+      const sh = images[i].size.y * scale;
+      if (img) {
+        context.imageSmoothingEnabled = false;
+        context.drawImage(img, sx, sy, sw, sh);
+      } else {
+        context.save();
+        context.strokeStyle = 'rgba(100, 100, 255, 0.8)';
+        context.setLineDash([4, 4]);
+        context.strokeRect(sx, sy, sw, sh);
+        context.fillStyle = 'rgba(100, 100, 255, 0.15)';
+        context.fillRect(sx, sy, sw, sh);
+        context.setLineDash([]);
+        context.fillStyle = 'rgba(100, 100, 255, 0.8)';
+        context.font = `${Math.max(8, 3 * scale)}px Russo One, Verdana, Arial, Helvetica, sans-serif`;
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillText('Image', sx + sw / 2, sy + sh / 2);
+        context.restore();
+      }
+    }
     if (outline) {
       for (var i in this.objects) {
         if (this.objects[i].type == 'reward' || this.objects[i].type == 'hatReward' || this.objects[i].type == 'trailReward') {
@@ -1031,7 +1087,7 @@ class Area {
         if (selected.includes(i)) {
           context.strokeStyle = 'rgb(255, 14, 14)';
         }
-        if (this.objects[i].type == 'text' || this.objects[i].type == 'turret') {
+        if (this.objects[i].type == 'text' || this.objects[i].type == 'turret' || this.objects[i].type == 'particleEmitter') {
           context.arc(Math.round(Math.round(width / 2) + ((this.objects[i].pos.x) - cam.x) * scale), Math.round(Math.round(height / 2) + ((this.objects[i].pos.y) - cam.y) * scale), 5 * scale, 0, Math.PI * 2, true);
           context.stroke();
         } else {
@@ -1104,6 +1160,12 @@ class Area {
     }
     if (obj.type == 'timeTrap') {
       this.objects.push(new TimeTrap(obj.pos, obj.size, obj.time));
+    }
+    if (obj.type == 'particleEmitter') {
+      this.objects.push(new ParticleEmitter(obj.pos, obj.particleType, obj.emissionType, obj.color, obj.intensity, obj.spreadRadius, obj.particleSize, obj.lifetimeMs, obj.particleSpeed, obj.layer));
+    }
+    if (obj.type == 'image') {
+      this.objects.push(new ImageObj(obj.pos, obj.size, obj.data, obj.collide));
     }
     if (obj.type == 'noBoostZone') {
       this.objects.push(new NoBoostZone(obj.pos, obj.size));
@@ -1492,6 +1554,68 @@ class Spawner {
     objectSize.open();
   }
 }
+class ParticleEmitter {
+  constructor(pos, particleType, emissionType, color, intensity, spreadRadius, particleSize, lifetimeMs, particleSpeed, layer) {
+    this.type = 'particleEmitter';
+    this.pos = new Vector(pos.x, pos.y);
+    this.particleType = particleType || 0;
+    this.emissionType = emissionType || 0;
+    this.color = color || 0xFFFFFFFF;
+    this.intensity = intensity || 1.0;
+    this.spreadRadius = spreadRadius || 100.0;
+    this.particleSize = particleSize || 1.0;
+    this.lifetimeMs = lifetimeMs || 1000;
+    this.particleSpeed = particleSpeed || 20.0;
+    this.layer = layer || 0;
+  }
+
+  copy() {
+    return {
+      type: this.type,
+      pos: this.pos,
+      particleType: this.particleType,
+      emissionType: this.emissionType,
+      color: this.color,
+      intensity: this.intensity,
+      spreadRadius: this.spreadRadius,
+      particleSize: this.particleSize,
+      lifetimeMs: this.lifetimeMs,
+      particleSpeed: this.particleSpeed,
+      layer: this.layer,
+    };
+  }
+
+  customGui(gui) {
+    let objectPosition = gui.addFolder('Position');
+    objectPosition.add(this.pos, 'x').step(1);
+    objectPosition.add(this.pos, 'y').step(1);
+    gui.add(this, 'particleType', {
+      fire: 0,
+      rain: 1,
+      snow: 2,
+      boost: 3,
+      square: 4
+    });
+    gui.add(this, 'emissionType', {
+      explode: 0,
+      rain: 1,
+      random: 2
+    });
+    gui.addColor(this, 'color'); // removing for now because it is useless! and i want to force good defaults lowk
+    gui.add(this, 'intensity').min(0).step(0.1);
+    gui.add(this, 'spreadRadius').min(0).step(1);
+    gui.add(this, 'particleSize').min(0).step(0.1);
+    gui.add(this, 'lifetimeMs').min(0).step(10);
+    gui.add(this, 'particleSpeed').min(0).step(0.1);
+    gui.add(this, 'layer', {
+      background: 0,
+      obstacles: 1,
+      player: 2,
+    });
+    objectPosition.open();
+  }
+}
+
 class Text {
   constructor(pos, text) {
     this.type = 'text';
@@ -1853,6 +1977,82 @@ class TimeTrap {
     objectPosition.open();
   }
 }
+class ImageObj {
+  constructor(pos, size, data, collide) {
+    this.type = 'image';
+    this.pos = new Vector(pos.x, pos.y);
+    this.size = new Vector(size.x, size.y);
+    this.data = data || '';
+    this.collide = !!collide;
+    this._img = null;
+    this._loadedData = '';
+  }
+
+  getImage() {
+    if (this.data && this.data !== this._loadedData) {
+      this._loadedData = this.data;
+      this._img = null;
+      const img = new Image();
+      img.onload = () => { this._img = img; };
+      img.src = this.data;
+    }
+    return this._img;
+  }
+
+  copy() {
+    return {
+      type: this.type,
+      pos: this.pos,
+      size: this.size,
+      data: this.data,
+      collide: this.collide,
+    };
+  }
+
+  _pickFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.data = reader.result;
+        this._loadedData = '';
+        this._img = null;
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth;
+          const h = img.naturalHeight;
+          let a = w, b = h;
+          while (b) { [a, b] = [b, a % b]; }
+          const rw = w / a;
+          const rh = h / a;
+          const k = Math.max(1, Math.floor(20 / Math.min(rw, rh)));
+          this.size.x = rw * k;
+          this.size.y = rh * k;
+        };
+        img.src = this.data;
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  customGui(gui) {
+    let objectPosition = gui.addFolder('Position');
+    objectPosition.add(this.pos, 'x').step(1);
+    objectPosition.add(this.pos, 'y').step(1);
+    let objectSize = gui.addFolder('Size');
+    objectSize.add(this.size, 'x').min(1).step(1);
+    objectSize.add(this.size, 'y').min(1).step(1);
+    gui.add(this, 'collide');
+    gui.add(this, '_pickFile').name('Choose Image...');
+    objectPosition.open();
+    objectSize.open();
+  }
+}
 class NoBoostZone {
   constructor(pos, size, time) {
     this.type = 'noBoostZone';
@@ -2181,7 +2381,7 @@ document.addEventListener('mousemove', (p) => {
   let grab = false;
   for (var i in area.objects) {
     // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
-    if (area.objects[i].type != 'text' && area.objects[i].type != 'turret') {
+    if (area.objects[i].type != 'text' && area.objects[i].type != 'turret' && area.objects[i].type != 'particleEmitter') {
       if (mousePos.x > area.objects[i].pos.x - (sizeS / scale)
         && mousePos.x < area.objects[i].pos.x + area.objects[i].size.x + (sizeS / scale)
         && mousePos.y > area.objects[i].pos.y - (sizeS / scale)
@@ -2211,7 +2411,7 @@ document.addEventListener('mousemove', (p) => {
   for (var i in area.objects) {
     // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
     if (resizeX == 0 && resizeY == 0) {
-      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
         if (Math.sqrt(Math.pow(mousePos.x - area.objects[i].pos.x, 2) + Math.pow(mousePos.y - area.objects[i].pos.y, 2)) < 5) {
           grab = true;
         }
@@ -2281,7 +2481,7 @@ document.getElementById('game').onmousedown = function (e) {
     }
     for (var i in area.objects) {
       // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
-      if (area.objects[i].type != 'text' && area.objects[i].type != 'turret') {
+      if (area.objects[i].type != 'text' && area.objects[i].type != 'turret' && area.objects[i].type != 'particleEmitter') {
         if (mousePos.x > area.objects[i].pos.x - (sizeS / scale)
           && mousePos.x < area.objects[i].pos.x + area.objects[i].size.x + (sizeS / scale)
           && mousePos.y > area.objects[i].pos.y - (sizeS / scale)
@@ -2335,7 +2535,7 @@ document.getElementById('game').onmousedown = function (e) {
     for (var i in area.objects) {
       // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
       if (!borderIsSelectedX && !borderIsSelectedY) {
-        if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+        if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
           if (Math.sqrt(Math.pow(mousePos.x - area.objects[i].pos.x, 2) + Math.pow(mousePos.y - area.objects[i].pos.y, 2)) < 5) {
             isSelected = true;
             if (!selected.includes(i) && keys[16] != true) {
@@ -2389,7 +2589,7 @@ document.onmouseup = function (e) {
     let area = world.getArea();
     for (var i in area.objects) {
       // if (area.objects[i].type == 'reward' || area.objects[i].type == 'hatReward') continue;
-      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+      if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
         if (area.objects[i].pos.x > topleft.x
           && area.objects[i].pos.x < bottomright.x
           && area.objects[i].pos.y > topleft.y
@@ -2436,7 +2636,7 @@ parentControl.addEventListener('contextmenu', () => {
   let area = world.getArea();
   let mousePosContext = new Vector(Math.round(((mousePosReal.x - width / 2) / scale) + cam.x), Math.round(((mousePosReal.y - height / 2) / scale) + cam.y));
   for (let i in area.objects) {
-    if (area.objects[i].type == 'text' || area.objects[i].type == 'turret') {
+    if (area.objects[i].type == 'text' || area.objects[i].type == 'turret' || area.objects[i].type == 'particleEmitter') {
       if (Math.sqrt(Math.pow(mousePos.x - area.objects[i].pos.x, 2) + Math.pow(mousePos.y - area.objects[i].pos.y, 2)) < 5) {
         isObject = true;
         object = i;
@@ -2575,6 +2775,51 @@ parentControl.addEventListener('contextmenu', () => {
           }
         },
         enabled: selected.includes(object),
+      },
+      {
+        label: 'Bake to Image',
+        onClick: () => {
+          const selObjs = selected.map(i => area.objects[i]);
+          let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+          for (const obj of selObjs) {
+            minX = Math.min(minX, obj.pos.x);
+            minY = Math.min(minY, obj.pos.y);
+            maxX = Math.max(maxX, obj.pos.x + obj.size.x);
+            maxY = Math.max(maxY, obj.pos.y + obj.size.y);
+          }
+          const w = maxX - minX;
+          const h = maxY - minY;
+          const offCanvas = document.createElement('canvas');
+          offCanvas.width = w;
+          offCanvas.height = h;
+          const offCtx = offCanvas.getContext('2d');
+          const sorted = [...selObjs].sort((a, b) => a.layer - b.layer);
+          for (const obj of sorted) {
+            const rgb = hexToRgb(obj.color);
+            offCtx.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},${obj.opacity})`;
+            offCtx.fillRect(obj.pos.x - minX, obj.pos.y - minY, obj.size.x, obj.size.y);
+          }
+          const dataUrl = offCanvas.toDataURL('image/png');
+          let tempArray = [];
+          for (let i in area.objects) {
+            if (!selected.includes(i)) {
+              tempArray.push(area.objects[i]);
+            }
+          }
+          area.objects = tempArray;
+          area.createObject({
+            type: 'image',
+            pos: new Vector(minX, minY),
+            size: new Vector(w, h),
+            data: dataUrl,
+            collide: false,
+          });
+          selected = [];
+          isSelected = false;
+        },
+        enabled: selected.includes(object)
+          && selected.length > 1
+          && selected.every(i => area.objects[i] && area.objects[i].type === 'block' && !area.objects[i].collide),
       },
       ],
     },
@@ -2784,6 +3029,35 @@ parentControl.addEventListener('contextmenu', () => {
             pos: mousePosContext,
             size: new Vector(50, 20),
             time: 5,
+          });
+        },
+      },
+      {
+        label: 'Particle Emitter',
+        onClick: () => {
+          area.createObject({
+            type: 'particleEmitter',
+            pos: mousePosContext,
+            particleType: 0,
+            color: 0xFFFFFFFF,
+            intensity: 10.0,
+            spreadRadius: 30.0,
+            particleSize: 2.0,
+            lifetimeMs: 900,
+            particleSpeed: 20.0,
+            layer: 0,
+            emissionType: 0
+          });
+        },
+      },
+      {
+        label: 'Image',
+        onClick: () => {
+          area.createObject({
+            type: 'image',
+            pos: mousePosContext,
+            size: new Vector(50, 50),
+            data: '',
           });
         },
       },
